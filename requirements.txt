@@ -1,0 +1,16 @@
+aiohttp==3.6.2
+async-timeout==3.0.1
+attrs==19.3.0
+cffi==1.14.0
+chardet==3.0.4
+cryptography==2.9.2
+docutils==0.16
+http-ece==1.1.0
+idna==2.10
+lockfile==0.12.2
+multidict==4.7.6
+pycparser==2.20
+python-daemon==2.2.4
+six==1.15.0
+websockets==8.1
+yarl==1.4.2

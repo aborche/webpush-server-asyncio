@@ -1,0 +1,99 @@
+﻿<html>
+
+<head>
+    <title></title>
+    <style>
+        html, body {
+            text-align: center;
+            position: relative;
+            height: 100%;
+        }
+        .wrapper {
+            position: absolute;            
+            left: 50%;
+            top: 50%;
+                                
+            display: flex;
+            flex-flow: row wrap;
+            justify-content: space-around;
+            width: 1100px;
+            
+            margin-left: -550px;
+            margin-top: -200px;
+        }
+        .wrapper > div {
+            flex: 300px;
+            height: 100px;
+            margin: 25px;
+            text-align: center;
+        }
+        .wrapper > div a {
+            font-family: Arial, Helvetica, sans-serif;
+            text-decoration: none;
+            color: black;
+            font-size: 1.2em;
+            font-weight: bold;
+            display: block;
+        }
+        .wrapper > div a:hover {
+            color: gray;
+        }
+        .wrapper > div img {
+            max-width: 100%;
+            max-height: 100px;            
+            display: block;
+            margin: 1em auto;
+        }
+    </style>
+    <script src="/static/jquery-3.4.1.min.js" crossorigin="anonymous"></script>
+</head>
+
+<body>
+    <div class="wrapper">
+	<div style='margin: 80px'><button id="pushnotify" disabled style='width:200px; height:100px; display: inline-block;'>Check Push Notify</button></div>
+    </div>
+    <script src="/static/main.js"></script>
+    <script src="/sw.js"></script>
+    <script>
+	var login;
+	function uuidv4() {
+	  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+	    var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
+	    return v.toString(16);
+	  });
+	}
+
+	async function whoami()
+		{
+			var response = await fetch('/whoami');
+			var json = await response.json();
+			login = json.login;
+			$("#pushnotify").attr('disabled', false);
+		};
+	whoami();
+	async function sendtestpush()
+	{
+	  var uuid = uuidv4();
+	  var pushbody = {
+            "url": "http://habr.com/users/aborche/",
+            "recipient": login,
+            "title": "Проверка работы webpush сервера",
+            "body": "Спасибо что прочитали статью :)\r\n",
+            "icon": "/static/images/new-notification.png",
+            "version": uuid,
+            "tag": uuid,
+            "mtime": parseInt(new Date().getTime()/1000)
+	  }
+	  var response = await fetch('/pushdata/', {
+	    method: 'POST',
+	    headers: {
+		'Content-Type': 'application/json;charset=utf-8'
+	    },
+	    body: JSON.stringify(pushbody)
+	    });
+	}
+	$("#pushnotify").click(function() { sendtestpush() });
+    </script>
+</body>
+
+</html>
