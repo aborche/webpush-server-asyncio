@@ -1,7 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf8 -*-
 
-# WS server example that synchronizes state across clients
+# AsyncIO WebPush server example
+# (c) aborche 2020
 
 import asyncio
 import json
@@ -20,14 +21,11 @@ from aiohttp import web
 from log import *
 
 import http_ece
-#import requests
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives.asymmetric import ec
 from cryptography.hazmat.primitives import serialization
 
-#logging.basicConfig()
-
-SERVERNAME='rusunix.net'
+SERVERNAME='webpush.example.net'
 USERIDHEADERNAME='X-Remote-Addr'
 
 # Время жизни сообщений в очереди
@@ -252,8 +250,6 @@ async def send_push_notification_channel(channel, bodydata=None):
     if channel not in CHANNELS:
         return False
     else:
-    #for channel in LOGINS_IN_CHANNELS[username].keys():
-    #    if channel in CHANNELS:
         logger.debug('Send notification to channel: %s' % channel)
         logger.debug('BodyData: %s => %s'%(type(bodydata), bodydata))
         logger.debug('Send notification to websocket.handler: %s' % CHANNELS[channel])
@@ -294,7 +290,6 @@ async def update_channel_keys(request, data):
     logger.debug('Update Channel keys Headers: %s' % request.headers)
     if USERIDHEADERNAME not in set(request.headers):
         return False
-    # basiclogin = base64.standard_b64decode(request.headers['Authorization'].replace('Basic ','')).split(b':',2)[0].decode()
     basiclogin = request.headers[USERIDHEADERNAME]
     logger.debug('Login %s' % basiclogin)
     if basiclogin not in LOGINS_IN_CHANNELS:
@@ -359,7 +354,6 @@ async def pushserver(websocket, path):
                     websocket.handler.uaid = data['uaid']
                     if 'broadcasts' in data:
                         websocket.handler.register_broadcasts(data['broadcasts'])
-                    #logger.debug('Hello[helloreturn]: %s'%helloreturn)
                     logger.debug('Hello websocket: %s' % vars(websocket.handler))
                     CHANNELS.update({ data['uaid'] : websocket.handler })
                     await websocket.send(json.dumps(helloreturn))
@@ -508,7 +502,6 @@ async def http_server():
 def main():
     start_server = websockets.serve(pushserver, '127.0.0.1', 6789)
     asyncio.get_event_loop().create_task(requeue_messages())
-    #asyncio.get_event_loop().run_until_complete(greet_every_two_seconds())
     asyncio.get_event_loop().run_until_complete(start_server)
     asyncio.get_event_loop().run_until_complete(http_server())
     asyncio.get_event_loop().run_forever()
